@@ -1,8 +1,12 @@
 import express from 'express'
 import path from 'path'
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 let app = express();
-const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, 'fst/build')));
 
 app.get('/api/hello', (req, res) => {
     res.send({ express: 'Hello From Express' });
@@ -17,6 +21,7 @@ app.post('/api/world', (req, res) => {
         `I received your POST request. This is what you sent me: ${req.body.post}`,
     );
 });
+
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname+'/fst/build/index.html'));
