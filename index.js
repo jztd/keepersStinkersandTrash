@@ -9,7 +9,7 @@ app.get('/api/hello', (req, res) => {
 });
 
 app.get('/recipes', (req, res) => {
-    res.send("SPAGHETI IS GOOD IF FRIED");
+    res.send("SPAGHETTI IS GOOD IF FRIED");
 });
   
 app.post('/api/world', (req, res) => {
