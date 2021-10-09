@@ -11,9 +11,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type":"module",
+  "type": "module",
   "dependencies": {
-    "create-react-app": "4.0.3",
     "express": "4.17.1"
   }
 }
