@@ -4,8 +4,9 @@ import redis from 'redis';
 class DataStore {
     // mongoDb
     static mongo;
-    static kstDatabase
+    static kstDatabase;
     static recipies;
+    static users;
 
     //redis
     static cache;
@@ -21,8 +22,9 @@ class DataStore {
 
         DataStore.kstDatabase = await DataStore.mongo.db('kst');
         DataStore.recipies = await DataStore.kstDatabase.collection('recipe');
+        DataStore.users = await DataStore.kstDatabase.collection('user');
 
-        DataStore.cache = await redis.createClient();
+        DataStore.cache = redis.createClient();
         await DataStore.cache.connect();
 
     }
@@ -31,14 +33,26 @@ class DataStore {
         return await DataStore.recipies.insertOne({ name: "testTwo" }); 
     }
 
+    static createUser = async (username, hash, salt) => {
+        return await DataStore.users.insertOne({ username, hash, salt });
+    }
+
+    static getUser = async (username) => {
+        return await DataStore.users.findOne({ username: username });
+    }
+
+    static getUserById = async (userId) => {
+        return await DataStore.users.findOne({ _id: new mongodb.ObjectId( userId) })
+    }
+
     static getRecipe = async (name) => {
         let recipe = await DataStore.getFromCache('recipe', name);
         if (recipe) {
             console.log("cached");
             return recipe;
         }
+        console.log("not cached");
         recipe = await DataStore.recipies.findOne({ "name" : name });
-        console.log(recipe);
         await DataStore.setCache('recipe', name, recipe);
         return recipe;
 
@@ -53,7 +67,6 @@ class DataStore {
             return;
         }
         const keyWithNamespace = namespace + ':' + key;
-        console.log(DataStore.cache);
         await DataStore.cache.set(keyWithNamespace, JSON.stringify(value), { EX: 10, NX: true });
         return;
     }
