@@ -50,7 +50,9 @@ const checkAuth = (req, res, next) => {
     if (req.isAuthenticated()) {
         return next();
     }
-    next(new Error('Unauthorized'));
+    const theError = new Error('Unauthorized');
+    theError.statusCode = 401
+    next(theError);
 }
 
 
@@ -63,8 +65,6 @@ app.get('/recipes',checkAuth, (req, res) => {
     res.send("SPAGHETTI IS GOOD IF FRIED");
 });
 
-
-  
 app.post('/register', async (req, res, next) => {
     console.log(req.body);
     let value = await UserHelpers.registerUser(req.body.username, req.body.password);
@@ -74,15 +74,28 @@ app.post('/register', async (req, res, next) => {
 
 app.post("/login", passport.authenticate("local", { failureRedirect: "/login-failure", successRedirect: "/login-success" }));
 
+app.post("/logout", checkAuth, (req, res) => {
+    req.logout();
+    res.redirect('/');
+})
+
 app.get('/login-failure', (req, res, next) => {
+    res.status(401);
     res.send('LOGIN FAILURE');
 });
 
 app.get('/login-success', (req, res, next) => {
-    res.send('LOGIN SUCCESS');
+    res.status(200)
+    res.send({data:{id: req.user._id, username: req.user.username}, error: null, msg:"success"});
 });
 
-app.get('*', (req, res) => {
+app.get('/getUser', checkAuth, async (req, res) => {
+    let data = await DataStore.getUserById(req.user._id);
+    console.log('getting user');
+    res.send({data:{id: req.user._id, username: req.user.username}, error: null, msg:"success"});
+})
+
+app.get('*', (req, res, next) => {
     res.sendFile(path.join(__dirname+'/fst/build/index.html'));
 });
 
